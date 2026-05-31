@@ -9,6 +9,8 @@ class Settings(BaseSettings):
 
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 50
 
+    GEMINI_API_KEY: str
+
     model_config = SettingsConfigDict(
         env_file='.env',
         extra="ignore"
