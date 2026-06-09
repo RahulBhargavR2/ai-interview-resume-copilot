@@ -8,7 +8,7 @@ from app.core.config import settings
 
 client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
-
+# parse the resume and genereate  report
 def analyze_resume(resume_text):
     prompt = f"""
 You are an expert ATS resume analyzer.

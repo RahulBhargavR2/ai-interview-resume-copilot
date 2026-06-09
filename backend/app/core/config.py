@@ -11,6 +11,8 @@ class Settings(BaseSettings):
 
     GEMINI_API_KEY: str
 
+    LLM_MODEL: str
+
     model_config = SettingsConfigDict(
         env_file='.env',
         extra="ignore"
