@@ -6,6 +6,7 @@ from app.services.summary_generator import generate_summary
 
 
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 
 # start the session
@@ -26,41 +27,15 @@ def start_interview(
 
     # generate new question
     question = generate_question(role=role, difficulty=difficulty)
-    # add generated question to db
-    message = InterviewMessage(session_id=session.id, question=question)
-    db.add(message)
+    session.current_question = question
+    session.question_count += 1;
     db.commit()
-    db.refresh(message)
+    db.refresh(session)
 
     return {"session_id": session.id, "question": question}
 
-# retrives latest unanswered question that has beed gnerated
-def get_current_message(session_id, db: Session):
-    return (
-        db.query(InterviewMessage)
-        .filter(
-            InterviewMessage.session_id == session_id, InterviewMessage.answer.is_(None)
-        )
-        .first()
-    )
-
-
-#  checks whether the interview is completed by comparing the no fo questions asked
-def is_interview_completed(db, session_id, max_questions=10):
-    question_count = (
-        db.query(InterviewMessage)
-        .filter(
-            InterviewMessage.session_id == session_id,
-            InterviewMessage.answer.isnot(None),
-        )
-        .count()
-    )
-
-    return question_count >= max_questions
-
-
-# retrive all the previous questions of that session
-def retrive_history(session_id,db:Session):
+# retrieve all the previous questions of that session
+def retrieve_history(session_id,db:Session):
 
     messages = (
         db.query(InterviewMessage)
@@ -85,8 +60,8 @@ def retrive_history(session_id,db:Session):
 
 #  submit user answer, evaluate it , generate report
 # then generate next question
-def submit_answer(session_id, answer, db: Session):
-    # retrive the current session
+def submit_answer(session_id, answer, db: Session,max_questions:int=10):
+    # retrieve the current session
     session = (
         db.query(InterviewSession).filter(InterviewSession.id == session_id).first()
     )
@@ -96,13 +71,9 @@ def submit_answer(session_id, answer, db: Session):
     if not session:
         raise ValueError("Interview session not found")
 
-    
-    
-    # get the latest question
-    current_message = get_current_message(session_id, db)
 
     # if no question is generated raise error
-    if not current_message:
+    if not session.current_question:
         raise ValueError("No active question found")
 
     # if session is already completed
@@ -114,37 +85,43 @@ def submit_answer(session_id, answer, db: Session):
     evaluation = evaluate_answer(
         role=session.role,
         difficulty=session.difficulty,
-        question=current_message.question,
+        question=session.current_question,
         answer=answer,
     )
 
     # store the evaluated result into database
-    current_message.answer = answer
-    current_message.score = evaluation["score"]
-    current_message.feedback = evaluation["feedback"]
-    current_message.strengths = evaluation["strengths"]
-    current_message.improvements = evaluation["improvements"]
-    db.commit()
-    db.refresh(current_message)
+    message = InterviewMessage(
+        session_id=session_id,
+        question=session.current_question,
+        answer=answer,
+        score=evaluation["score"],
+        feedback=evaluation["feedback"],
+        strengths=evaluation["strengths"],
+        improvements=evaluation["improvements"],
+    )
+
+    db.add(message)
+    
 
     # if num of questions exceede the limit
-    if is_interview_completed(db, session_id):
+    # if is_interview_completed(db, session_id):
+    if session.question_count >= max_questions:
         session.status = "completed"
+        session.completed_at = datetime.utcnow()
         db.commit()
 
         return complete_interview(session_id, session.role, session.difficulty, db)
 
     
-    history = retrive_history(session_id,db)
+    history = retrieve_history(session_id,db)
     # generate next question of next state
     next_question = generate_question(
         role=session.role, difficulty=session.difficulty, history=history
     )
-    next_message = InterviewMessage(session_id=session_id, question=next_question)
 
-    db.add(next_message)
+    session.current_question = next_question
+    session.question_count += 1   
     db.commit()
-    db.refresh(next_message)
 
     return {
         "session_id": session_id,
@@ -155,17 +132,13 @@ def submit_answer(session_id, answer, db: Session):
 
 # end the interview session and generate report
 def complete_interview(session_id, role, difficulty, db: Session):
-    messages = (
-        db.query(InterviewMessage)
-        .filter(InterviewMessage.session_id == session_id)
-        .all()
-    )
+    messages = session.messages
 
     scores = [m.score for m in messages if m.score is not None]
 
     average_score = sum(scores) / len(scores) if scores else 0
 
-    summary = generate_summary(messages)
+    summary = generate_summary(role,difficulty,messages)
 
     return {
         "average_score": average_score,

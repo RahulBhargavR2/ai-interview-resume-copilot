@@ -23,14 +23,14 @@ Candidate Answer:
 Evaluate the answer.
 
 Scoring Rules:
-- Score from 0 to 10.
+- Score from 0 to 10 based on performance.
 - Consider correctness, completeness, clarity, and depth.
 - Be strict according to the difficulty level.
 
 Return STRICT JSON only.
 
 {{
-    "score": 0,
+    "score": ,
     "feedback": "",
     "strengths": "",
     "improvements": ""
@@ -39,6 +39,9 @@ Return STRICT JSON only.
     response = client.generate(model=settings.LLM_MODEL,prompt=prompt)
 
     text = response["response"].replace("```json", "").replace("```", "").strip()
+    print(text)
+    t = json.loads(text)
+    print(t)
 
     try:
         return json.loads(text)

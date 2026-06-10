@@ -38,14 +38,18 @@ class InterviewSession(Base):
 
     status = Column(String, default="active")
 
+    current_question = Column(String,nullable=True)
+
+    question_count = Column(Integer,default=0)
+
     created_at = Column(
         DateTime,
         default=datetime.utcnow
     )
 
+    completed_at = Column(DateTime,nullable=True)
+
     messages = relationship(
         "InterviewMessage",
         back_populates="session"
     )
-
-    status = Column(String, default="active")

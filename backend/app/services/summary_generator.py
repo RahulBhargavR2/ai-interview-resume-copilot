@@ -1,4 +1,5 @@
 from app.core.llm import client
+import json
 
 def generate_summary(role,difficulty,messages):
     history = []
