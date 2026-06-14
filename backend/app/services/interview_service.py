@@ -4,9 +4,8 @@ from app.services.generate_question import generate_question
 from app.services.evaluator import evaluate_answer
 from app.services.summary_generator import generate_summary
 
-
-from sqlalchemy.orm import Session
 from datetime import datetime
+from fastapi import HTTPException
 
 
 # start the session
@@ -14,7 +13,7 @@ def start_interview(
     user_id,
     role,
     difficulty,
-    db: Session,
+    db,
 ):
 
 #   create new session
@@ -35,7 +34,7 @@ def start_interview(
     return {"session_id": session.id, "question": question}
 
 # retrieve all the previous questions of that session
-def retrieve_history(session_id,db:Session):
+def retrieve_history(session_id,db):
 
     messages = (
         db.query(InterviewMessage)
@@ -60,7 +59,7 @@ def retrieve_history(session_id,db:Session):
 
 #  submit user answer, evaluate it , generate report
 # then generate next question
-def submit_answer(session_id, answer, db: Session,max_questions:int=10):
+def submit_answer(session_id, answer, db,max_questions:int=3):
     # retrieve the current session
     session = (
         db.query(InterviewSession).filter(InterviewSession.id == session_id).first()
@@ -131,7 +130,13 @@ def submit_answer(session_id, answer, db: Session,max_questions:int=10):
 
 
 # end the interview session and generate report
-def complete_interview(session_id, role, difficulty, db: Session):
+def complete_interview(session_id, role, difficulty, db):
+    session = db.query(InterviewSession).filter(InterviewSession.id == session_id).first()
+    if not session:
+        raise HTTPException(
+            status_code=404,
+            detail="Interview session not found"
+        )
     messages = session.messages
 
     scores = [m.score for m in messages if m.score is not None]
@@ -140,6 +145,10 @@ def complete_interview(session_id, role, difficulty, db: Session):
 
     summary = generate_summary(role,difficulty,messages)
 
+    session.summary = summary;
+    session.status = "completed"
+    session.completed_at = datetime.utcnow()
+    db.commit()
     return {
         "average_score": average_score,
         "summary": summary,

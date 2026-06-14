@@ -1,8 +1,15 @@
-from sqlalchemy import Column,Integer,String,DateTime
-
 from datetime import datetime
 
 from app.db.database import Base
+
+from enum import Enum
+class UserRole(str, Enum):
+    CANDIDATE = "candidate"
+    ADMIN = "admin"
+
+
+from sqlalchemy import Column, Integer, String, DateTime, Enum
+
 
 class User(Base):
     __tablename__ = 'users'
@@ -23,8 +30,12 @@ class User(Base):
         nullable=False
     )
 
+    role = Column(
+        Enum(UserRole),
+        default=UserRole.CANDIDATE
+    )
+
     created_at = Column(
         DateTime,
         default=datetime.utcnow
     )
-    

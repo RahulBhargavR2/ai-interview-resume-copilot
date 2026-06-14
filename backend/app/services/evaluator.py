@@ -39,9 +39,7 @@ Return STRICT JSON only.
     response = client.generate(model=settings.LLM_MODEL,prompt=prompt)
 
     text = response["response"].replace("```json", "").replace("```", "").strip()
-    print(text)
-    t = json.loads(text)
-    print(t)
+   
 
     try:
         return json.loads(text)

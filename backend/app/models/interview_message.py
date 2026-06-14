@@ -5,7 +5,7 @@ from sqlalchemy import (
     Column,
     ForeignKey,
     Text,
-    Sequence
+    Sequence,
 )
 
 from datetime import datetime

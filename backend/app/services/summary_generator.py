@@ -1,4 +1,5 @@
 from app.core.llm import client
+from app.core.config import settings
 import json
 
 def generate_summary(role,difficulty,messages):
@@ -33,7 +34,7 @@ Evaluate the candidate across:
 Return STRICT JSON.
 
 {{
-    "overall_score": 0,
+    "overall_score": ,
     "technical_rating": "",
     "communication_rating": "",
     "problem_solving_rating": "",
@@ -45,7 +46,10 @@ Return STRICT JSON.
 }}
 """
 
-    response = client.generate(prompt)
+    response = client.generate(
+        model=settings.LLM_MODEL,
+        prompt=prompt
+        )
 
     text = response['response'].replace("```json", "").replace("```", "").strip()
 

@@ -9,48 +9,24 @@ from app.schemas.user import (
     UserLogin
 )
 from app.core.config import settings
+from app.db.dependencies import get_db
+from app.core.security import get_current_user
+
+
 
 from app.core.security import(
     create_access_token,
     hash_password,
     verify_password
 )
+
 router = APIRouter(
     prefix="/auth",
     tags=["Authentication"] 
 )
 
 
-security = HTTPBearer()
 
-
-def get_db():
-    db = SessionLocal()
-
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-def get_current_user(token=Depends(security)):
-
-    credentials_exception = HTTPException(status_code=401, detail="Invalid token")
-
-    try:
-        payload = jwt.decode(
-            token.credentials, settings.JWT_SECRET, algorithms=[settings.JWT_ALGORITHM]
-        )
-
-        email = payload.get("sub")
-
-        if email is None:
-            raise credentials_exception
-
-        return email
-
-    except JWTError:
-        raise credentials_exception
 
 
 @router.post("/register")
@@ -83,7 +59,7 @@ def register(
     }
 
 
-@router.post("login")
+@router.post("/login")
 def login(
     user: UserLogin,
     db : Session = Depends(get_db)
@@ -108,7 +84,7 @@ def login(
 
     token = create_access_token(
         {
-            "sub":existing_user.email
+            "sub":str(existing_user.id)
         }
     )
 
@@ -120,4 +96,4 @@ def login(
 
 @router.get("/me")
 def get_me(current_user=Depends(get_current_user)):
-    return {"email": current_user}
+    return {"name":current_user.name,"email":current_user.email,"role":current_user.role}

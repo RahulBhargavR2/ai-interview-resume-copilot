@@ -3,7 +3,8 @@ from sqlalchemy import (
     Integer,
     String,
     DateTime,
-    ForeignKey
+    ForeignKey,
+    JSON
 )
 
 from datetime import datetime
@@ -48,6 +49,8 @@ class InterviewSession(Base):
     )
 
     completed_at = Column(DateTime,nullable=True)
+
+    summary = Column(JSON,nullable=True)
 
     messages = relationship(
         "InterviewMessage",
