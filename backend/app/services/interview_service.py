@@ -3,6 +3,7 @@ from app.models.interview_message import InterviewMessage
 from app.services.generate_question import generate_question
 from app.services.evaluator import evaluate_answer
 from app.services.summary_generator import generate_summary
+from app.services.session_retriver import get_session_by_id
 
 from datetime import datetime
 from fastapi import HTTPException
@@ -59,11 +60,9 @@ def retrieve_history(session_id,db):
 
 #  submit user answer, evaluate it , generate report
 # then generate next question
-def submit_answer(session_id, answer, db,max_questions:int=3):
+def submit_answer(session_id,user_id, answer, db,max_questions:int=3):
     # retrieve the current session
-    session = (
-        db.query(InterviewSession).filter(InterviewSession.id == session_id).first()
-    )
+    session = get_session_by_id(session_id,user_id,db)
 
 
     # if no session is generated
@@ -100,16 +99,19 @@ def submit_answer(session_id, answer, db,max_questions:int=3):
     )
 
     db.add(message)
+    # db.commit()
     
 
     # if num of questions exceede the limit
     # if is_interview_completed(db, session_id):
     if session.question_count >= max_questions:
-        session.status = "completed"
-        session.completed_at = datetime.utcnow()
-        db.commit()
 
-        return complete_interview(session_id, session.role, session.difficulty, db)
+        report = complete_interview(session_id, session.role, session.difficulty, db)
+        return {
+            "session_id":session_id,
+            "evaluation":evaluation,
+            "report":report
+        }
 
     
     history = retrieve_history(session_id,db)
@@ -147,6 +149,7 @@ def complete_interview(session_id, role, difficulty, db):
 
     session.summary = summary;
     session.status = "completed"
+    session.current_question = None
     session.completed_at = datetime.utcnow()
     db.commit()
     return {

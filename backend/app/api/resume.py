@@ -5,6 +5,7 @@ from fastapi import (APIRouter,UploadFile,File,HTTPException)
 
 from app.services.resume_parser import (extract_text_from_docx, extract_text_from_pdf)
 from app.services.ai_service import (analyze_resume)
+from app.core.logger import logger
 
 router = APIRouter(
     prefix="/resume",
@@ -66,8 +67,9 @@ async def upload_resume(
             "analysis":ai_analysis
         }
     except Exception as e:
+        logger.exception('Unable to upload resume')
         return HTTPException(
             status_code=500,
-            detail=e
+            detail=str(e)
         )
 
