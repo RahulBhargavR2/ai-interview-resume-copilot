@@ -64,11 +64,9 @@ def submit_answer(session_id,user_id, answer, db,max_questions:int=3):
     # retrieve the current session
     session = get_session_by_id(session_id,user_id,db)
 
-
     # if no session is generated
     if not session:
         raise ValueError("Interview session not found")
-
 
     # if no question is generated raise error
     if not session.current_question:
@@ -77,8 +75,7 @@ def submit_answer(session_id,user_id, answer, db,max_questions:int=3):
     # if session is already completed
     if session.status == "completed":
         raise ValueError("Interview already completed")
-    
-    
+
     # evaluate the users answer to the current question
     evaluation = evaluate_answer(
         role=session.role,
@@ -100,7 +97,6 @@ def submit_answer(session_id,user_id, answer, db,max_questions:int=3):
 
     db.add(message)
     # db.commit()
-    
 
     # if num of questions exceede the limit
     # if is_interview_completed(db, session_id):
@@ -113,7 +109,6 @@ def submit_answer(session_id,user_id, answer, db,max_questions:int=3):
             "report":report
         }
 
-    
     history = retrieve_history(session_id,db)
     # generate next question of next state
     next_question = generate_question(
@@ -133,27 +128,38 @@ def submit_answer(session_id,user_id, answer, db,max_questions:int=3):
 
 # end the interview session and generate report
 def complete_interview(session_id, role, difficulty, db):
-    session = db.query(InterviewSession).filter(InterviewSession.id == session_id).first()
+
+    session = (
+        db.query(InterviewSession).filter(InterviewSession.id == session_id).first()
+    )
+
     if not session:
-        raise HTTPException(
-            status_code=404,
-            detail="Interview session not found"
-        )
+        raise HTTPException(status_code=404, detail="Interview session not found")
+
     messages = session.messages
 
     scores = [m.score for m in messages if m.score is not None]
 
     average_score = sum(scores) / len(scores) if scores else 0
 
-    summary = generate_summary(role,difficulty,messages)
+    summary = generate_summary(role, difficulty, messages)
 
-    session.summary = summary;
+    session.overall_score = summary.get("overall_score", average_score)
+
+    summary_for_storage = summary.copy()
+    summary_for_storage.pop("overall_score", None)
+
+    session.summary = summary_for_storage
+
     session.status = "completed"
     session.current_question = None
     session.completed_at = datetime.utcnow()
+
     db.commit()
+
     return {
         "average_score": average_score,
-        "summary": summary,
-        "questions_answered": len(messages),
+        "overall_score": session.overall_score,
+        "summary": session.summary,
+        "questions_answered": len(scores),
     }

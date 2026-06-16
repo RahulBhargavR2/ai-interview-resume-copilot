@@ -1,6 +1,7 @@
 from sqlalchemy import (
     Column,
     Integer,
+    
     String,
     DateTime,
     ForeignKey,
@@ -51,6 +52,8 @@ class InterviewSession(Base):
     completed_at = Column(DateTime,nullable=True)
 
     summary = Column(JSON,nullable=True)
+
+    overall_score = Column(Integer,nullable=True)
 
     messages = relationship(
         "InterviewMessage",
