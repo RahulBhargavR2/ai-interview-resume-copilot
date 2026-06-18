@@ -6,6 +6,7 @@ class InterviewStartRequest(BaseModel):
     user_id: int
     role: str
     difficulty: str
+    interview_type: str
 
 
 class InterviewSessionResponse(BaseModel):

@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 from app.db.database import Base
 
 from enum import Enum
@@ -8,7 +9,8 @@ class UserRole(str, Enum):
     ADMIN = "admin"
 
 
-from sqlalchemy import Column, Integer, String, DateTime, Enum
+from sqlalchemy import Column, Integer, String, DateTime, Enum, JSON
+from sqlalchemy.dialects.postgresql import ARRAY
 
 
 class User(Base):
@@ -39,3 +41,21 @@ class User(Base):
         DateTime,
         default=datetime.utcnow
     )
+
+    skills = Column(
+        ARRAY(String),
+        nullable=True,
+        default=list
+    )
+
+    projects = Column(
+        JSON,
+        nullable=True,
+    )
+
+    experience = Column(
+        JSON,
+        nullable=True,
+    )
+
+

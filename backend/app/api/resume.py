@@ -1,11 +1,17 @@
 import os
 import shutil
 
-from fastapi import (APIRouter,UploadFile,File,HTTPException)
+from fastapi import (APIRouter,UploadFile,File,HTTPException,Depends)
 
 from app.services.resume_parser import (extract_text_from_docx, extract_text_from_pdf)
 from app.services.ai_service import (analyze_resume)
 from app.core.logger import logger
+from app.db.dependencies import get_db
+from app.core.security import get_current_user
+from app.models.user import User
+
+
+from sqlalchemy.orm import Session
 
 router = APIRouter(
     prefix="/resume",
@@ -16,7 +22,10 @@ UPLOAD_FOLDER = "uploads"
 
 @router.post("/upload")
 async def upload_resume(
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    current_user = Depends(get_current_user),
+    db:Session = Depends(get_db)
+
 ):
     try:
         if file.size and file.size > 5 * 1024 * 1024:
@@ -59,7 +68,13 @@ async def upload_resume(
             )
 
         ai_analysis = analyze_resume(extracted_text)
-        
+
+        user = db.query(User).filter(User.id == current_user.id).first()
+
+        user.skills = ai_analysis.get('skills',[])
+        user.projects = ai_analysis.get('projects',[])
+        user.experience = ai_analysis.get('experience',[])
+        db.commit()
 
         return {
             "filename":file.filename,

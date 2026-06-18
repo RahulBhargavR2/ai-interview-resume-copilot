@@ -55,6 +55,8 @@ class InterviewSession(Base):
 
     overall_score = Column(Integer,nullable=True)
 
+    interview_type = Column(String,nullable=False)
+
     messages = relationship(
         "InterviewMessage",
         back_populates="session"

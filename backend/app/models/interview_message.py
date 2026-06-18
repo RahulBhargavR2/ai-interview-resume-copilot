@@ -13,6 +13,7 @@ from datetime import datetime
 from app.db.database import Base
 
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import ARRAY
 
 class InterviewMessage(Base):
     __tablename__ = "interview_messages"
@@ -47,12 +48,14 @@ class InterviewMessage(Base):
         nullable=True
     )
     strengths = Column(
-        Text,
-        nullable=True
+        ARRAY(String),
+        nullable=True,
+        default=list
     )
     improvements = Column(
-        Text,
-        nullable=True
+        ARRAY(String),
+        nullable=True,
+        default=list
     )
 
     created_at = Column(

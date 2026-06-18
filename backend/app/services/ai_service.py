@@ -1,12 +1,11 @@
 import json
 
-from google import genai
+
 
 from app.core.config import settings
+from app.core.llm import client
 
 
-
-client = genai.Client(api_key=settings.GEMINI_API_KEY)
 
 # parse the resume and genereate  report
 def analyze_resume(resume_text):
@@ -20,6 +19,8 @@ Required JSON format:
 {{
   "ats_score": number,
   "skills": [],
+  "projects":[],
+  "experience":[],
   "missing_keywords": [],
   "strengths": [],
   "weaknesses": [],
@@ -29,12 +30,12 @@ Required JSON format:
 Resume:
 {resume_text}
 """
-    response = client.models.generate_content(
-        model="gemini-2.5-flash",
-        contents=prompt
+    response = client.generate(
+        model=settings.LLM_MODEL,
+        prompt=prompt
     )
 
-    text = response.text.strip()
+    text = response['response'].strip()
 
     text = (
         text
