@@ -27,7 +27,7 @@ def generate_summary(
 
     criteria = get_criteria(interview_type=session.interview_type, resume_aware=session.interview_type=='resume')
     context = ""
-    if session.interview_session == 'resume':
+    if session.interview_type == 'resume':
         context = RESUME_AWARE_CONTEXT.format(
             skills=resume_data.skills,
             projects=resume_data.projects,

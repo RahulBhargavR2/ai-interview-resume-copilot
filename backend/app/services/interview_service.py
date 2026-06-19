@@ -71,7 +71,7 @@ def submit_answer(
     user_id,
     answer,
     db,
-    max_questions: int = 3,
+    max_questions: int = 1,
 ):
     # retrieve the current session
     session = get_session_by_id(session_id, user_id, db)
@@ -128,7 +128,7 @@ def submit_answer(
             db,
             resume_data,
         )
-        return {"session_id": session_id, "evaluation": evaluation, "report": report}
+        return {"session_id": session_id,"completed":True, "evaluation": evaluation, "report": report}
 
     history = retrieve_history(session_id, db)
     # generate next question of next state
@@ -142,6 +142,7 @@ def submit_answer(
 
     return {
         "session_id": session_id,
+        "completed":False,
         "evaluation": evaluation,
         "next_question": next_question,
     }

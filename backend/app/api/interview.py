@@ -10,6 +10,8 @@ from app.schemas.interview import (
     InterviewStartRequest,
     AnswerRequest,
     InterviewSessionResponse,
+    StartInterviewResponse,
+    SubmitAnswerResponse
 )
 from app.core.permissions import require_role
 from app.core.permissions import get_current_user
@@ -22,7 +24,7 @@ from app.core.logger import logger
 router = APIRouter(prefix="/interview", tags=["interview"])
 
 
-@router.post("/start")
+@router.post("/start", response_model=StartInterviewResponse)
 def start(
     request: InterviewStartRequest = Body(...),
     current_user=Depends(get_current_user),
@@ -42,7 +44,7 @@ def start(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/answer")
+@router.post("/answer", response_model=SubmitAnswerResponse)
 def answer(
     request: AnswerRequest,
     current_user: Session = Depends(get_current_user),
