@@ -11,7 +11,8 @@ from app.schemas.interview import (
     AnswerRequest,
     InterviewSessionResponse,
     StartInterviewResponse,
-    SubmitAnswerResponse
+    SubmitAnswerResponse,
+    InterviewSessionReportResponse,
 )
 from app.core.permissions import require_role
 from app.core.permissions import get_current_user
@@ -75,24 +76,24 @@ def get_interview_sessions(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{interview_id}")
-def get_interviews(
-    session_id: int,
+@router.get("/{interview_id}",response_model=InterviewSessionResponse)
+def get_interview(
+    interview_id: int,
     current_user=Depends(require_role("candidate")),
     db: Session = Depends(get_db),
 ):
     try:
 
-        session = get_session_by_id(session_id, current_user.id, db)
+        session = get_session_by_id(interview_id, current_user.id, db)
         return session
     except Exception as e:
         logger.exception("unable to retrive interview details")
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{interview_id}/report")
+@router.get("/{interview_id}/report", response_model=InterviewSessionReportResponse)
 def get_interview_report(
-    session_id: int,
+    interview_id: int,
     current_user=Depends(get_current_user),
     db: Session = Depends(get_db),
 ):

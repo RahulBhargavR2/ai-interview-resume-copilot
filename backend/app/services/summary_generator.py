@@ -7,6 +7,8 @@ from app.prompts.interview_template import (
     get_criteria,
 )
 
+from app.core.llmResponse import generateResponse
+
 import json
 
 
@@ -29,9 +31,9 @@ def generate_summary(
     context = ""
     if session.interview_type == 'resume':
         context = RESUME_AWARE_CONTEXT.format(
-            skills=resume_data.skills,
-            projects=resume_data.projects,
-            experience=resume_data.experience,
+            skills=resume_data.get("skills", []),
+            projects=resume_data.get("projects", []),
+            experience=resume_data.get("experience", []),
         )
 
     prompt = BASE_SUMMARY_PROMPT.format(
@@ -43,12 +45,10 @@ def generate_summary(
         criteria=criteria,
     )+ SUMMARY_OUTPUT_FORMAT
 
-    response = client.generate(model=settings.LLM_MODEL, prompt=prompt)
-
-    text = response["response"].replace("```json", "").replace("```", "").strip()
+    response = generateResponse(prompt=prompt)
 
     try:
-        return json.loads(text)
+        return json.loads(response)
 
     except:
         return {

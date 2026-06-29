@@ -19,15 +19,19 @@ def start_interview(
     db,
 ):
 
+
     #   create new session
     session = InterviewSession(user_id=user_id, role=role, difficulty=difficulty,interview_type=interview_type)
+    resume_data = get_resume_data(session.interview_type, user_id, db)
+    if resume_data:
+        session.resume_id = resume_data.id
     # add it to db commit
     db.add(session)
     db.commit()
     # refresh so that we can use it immediately
     db.refresh(session)
 
-    resume_data = get_resume_data(session.interview_type,user_id,db)
+    resume_data = resume_data.analysis if resume_data is not None else None
 
     # generate new question
     question = generate_question(session=session,resume_data=resume_data)
@@ -52,11 +56,11 @@ def retrieve_history(session_id, db):
     history = [
         {
             "question": m.question,
-            "answer": m.answer,
-            "score": m.score,
-            "feedback": m.feedback,
-            "strengths": m.strengths,
-            "improvements": m.improvements,
+            # "answer": m.answer,
+            # "score": m.score,
+            # "feedback": m.feedback,
+            # "strengths": m.strengths,
+            # "improvements": m.improvements,
         }
         for m in messages
     ]
@@ -71,7 +75,7 @@ def submit_answer(
     user_id,
     answer,
     db,
-    max_questions: int = 1,
+    max_questions: int = 3,
 ):
     # retrieve the current session
     session = get_session_by_id(session_id, user_id, db)
@@ -97,6 +101,7 @@ def submit_answer(
         )
 
     resume_data = get_resume_data(session.interview_type, user_id, db)
+    resume_data = resume_data.analysis if resume_data is not None else None
 
     # evaluate the users answer to the current question
     evaluation = evaluate_answer(
@@ -201,4 +206,4 @@ def get_resume_data(interview_type, user_id, db):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    return user
+    return  user.resumes[-1] if user.resumes else None

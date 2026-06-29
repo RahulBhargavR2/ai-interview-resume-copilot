@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 
+# /start
 class InterviewStartRequest(BaseModel):
     user_id: int
     role: str
@@ -8,39 +9,16 @@ class InterviewStartRequest(BaseModel):
     interview_type: str
 
 
-class InterviewSessionResponse(BaseModel):
-    id: int
-    role: str
-    difficulty:str
+class StartInterviewResponse(BaseModel):
+    session_id: int
+    question: str
 
-    class Config:
-        from_attributes = True
+# /answer
 
 
 class AnswerRequest(BaseModel):
     session_id: int
     answer: str
-
-
-class InterviewMessageResponse(BaseModel):
-    id: int
-    question: str
-    answer: str
-
-    class Config:
-        from_attributes = True
-
-
-class InterviewSessionResponse(BaseModel):
-    id: int
-    status: str
-    role: str
-    difficulty: str
-    question_count:int
-    summary: dict | None = None
-
-    class Config:
-        from_attributes = True
 
 
 # helper
@@ -53,22 +31,23 @@ class EvaluationResponse(BaseModel):
 
 # helper
 class Summary(BaseModel):
-    overall_score: int
-    technical_rating:int
-    communication_rating:int
-    problem_solving_rating:int
+    # overall_score: int
+    technical_rating: str
+    communication_rating: str
+    problem_solving_rating: str
     overall_feedback: str
     strengths: list[str]
     weaknesses: list[str]
     recommendations: list[str]
-    hire_recommendation:str
+    hire_recommendation: str
+
 
 # helper
 class SummaryResponse(BaseModel):
-    average_score:int
+    average_score: int
     overall_score: int
-    summary:Summary
-    questions_answered:int
+    summary: Summary
+    questions_answered: int
 
 
 # main
@@ -79,7 +58,22 @@ class SubmitAnswerResponse(BaseModel):
     next_question: str | None = None
     report: SummaryResponse | None = None
 
-class StartInterviewResponse(BaseModel):
-    session_id:int
-    question:str
 
+# /interviews
+class InterviewSessionResponse(BaseModel):
+    id: int
+    status: str
+    role: str
+    difficulty: str
+    question_count: int
+    summary: Summary | None = None
+
+    class Config:
+        from_attributes = True
+
+
+# /{interview_id}/report
+class InterviewSessionReportResponse(BaseModel):
+    session_id: int
+    status: str
+    report: Summary

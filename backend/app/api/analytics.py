@@ -11,16 +11,22 @@ from app.services.overview_service import(
     get_performance,
     get_improvements,
     get_strengths,
-    get_weakness
+    get_weakness,
+    get_all_sessions
 )
 
+
+from app.schemas.analytics import(
+    OverviewResponse,
+    PerformanceResponse
+)
 
 router = APIRouter(
     prefix='/analytics',
     tags=['Analysis']
 )
 
-@router.get('/overview')
+@router.get('/overview', response_model=OverviewResponse)
 def overview(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -34,7 +40,7 @@ def overview(
             detail=str(e)
         )
 
-@router.get('/performance')
+@router.get('/performance', response_model=list[PerformanceResponse])
 def overview(
     current_user = Depends(get_current_user),
     db: Session = Depends(get_db)
@@ -91,3 +97,17 @@ def overview(
             detail=str(e)
         )
 
+
+@router.get('/sessions')
+def get_sessions(
+    current_user = Depends(get_current_user),
+    db : Session = Depends(get_db)
+):
+    try:
+        return get_all_sessions(current_user.id,db)
+    except Exception as e:
+        logger.exception('Error at strengths')
+        raise HTTPException(
+            status_code=500,
+            detail=str(e)
+        )

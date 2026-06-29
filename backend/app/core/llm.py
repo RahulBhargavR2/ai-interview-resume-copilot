@@ -7,3 +7,4 @@ try:
     print('Ollama is running...')
 except Exception as e:
     print('Ollama servies is not active')
+

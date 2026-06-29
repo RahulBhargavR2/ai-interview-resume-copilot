@@ -49,8 +49,8 @@ def get_performance(user_id, db):
 
     return [
         {
-            "date": session.completed_at,
-             "score": session.summary.get("overall_score", 0)
+            "date": str(session.completed_at),
+            "score": session.overall_score
         }
         for session in sessions
         if session.summary
@@ -68,10 +68,16 @@ def get_improvements(user_id, db):
         .all()
     )
 
+    # return [
+    #     session.summary["recommendations"]
+    #     for session in sessions
+    #     if session.summary and session.summary.get("recommendations")
+    # ]
     return [
-        session.summary["recommendations"]
+        recommendations
         for session in sessions
         if session.summary and session.summary.get("recommendations")
+        for recommendations in session.summary["recommendations"]
     ]
 
 def get_strengths(user_id,db):
@@ -83,10 +89,16 @@ def get_strengths(user_id,db):
         .all()
     )
 
+    # return [
+    #     session.summary["strengths"]
+    #     for session in sessions
+    #     if session.summary and session.summary.get("strengths")
+    # ]
     return [
-        session.summary["strengths"]
+        strength
         for session in sessions
         if session.summary and session.summary.get("strengths")
+        for strength in session.summary["strengths"]
     ]
 
 
@@ -98,12 +110,24 @@ def get_weakness(user_id, db):
         )
         .all()
     )
-    print(
-        [(session.summary and session.summary.get("weaknesses")) for session in sessions]
-    )
+   
+
+    # return [
+    #     session.summary["weaknesses"]
+    #     for session in sessions
+    #     if session.summary and session.summary.get("weaknesses")
+    # ]
 
     return [
-        session.summary["weaknesses"]
+        weakness
         for session in sessions
         if session.summary and session.summary.get("weaknesses")
+        for weakness in session.summary["weaknesses"]
     ]
+def get_all_sessions(user_id, db):
+    sessions = (
+        db.query(InterviewSession)
+        .filter(InterviewSession.user_id == user_id).all()
+    )
+
+    return sessions

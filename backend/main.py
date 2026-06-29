@@ -10,6 +10,8 @@ from app.api.analytics import router as analytics_router
 from app.models.user import User
 from app.models.interview_message import InterviewMessage
 from app.models.interview_session import InterviewSession
+from app.models.resume import Resume
+
 from app.core.logger import logger
 
 from fastapi.middleware.cors import CORSMiddleware

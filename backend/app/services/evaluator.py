@@ -8,6 +8,7 @@ from app.prompts.interview_template import (
     RESUME_AWARE_CONTEXT,
     get_criteria,
 )
+from app.core.llmResponse import (generateResponse)
 
 
 #  use llm of evaluate the user answer
@@ -28,9 +29,9 @@ def evaluate_answer(
 
     if session.interview_type=='resume' and resume_data:
         context = RESUME_AWARE_CONTEXT.format(
-            skills=resume_data.skills,
-            projects=resume_data.projects,
-            experience=resume_data.experience,
+            skills=resume_data.get("skills", []),
+            projects=resume_data.get("projects", []),
+            experience=resume_data.get("experience", []),
         )
 
     prompt = (
@@ -45,12 +46,10 @@ def evaluate_answer(
         )
         + EVALUATION_OUTPUT_FORMAT
     )
-    response = client.generate(model=settings.LLM_MODEL, prompt=prompt)
-
-    text = response["response"].replace("```json", "").replace("```", "").strip()
+    response = generateResponse(prompt=prompt)
 
     try:
-        return json.loads(text)
+        return json.loads(response)
 
     except:
         return {

@@ -8,25 +8,29 @@ from app.prompts.question_generation import (
     BASE_QUESTION_PROMPT,
     RESUME_GENERATION,
     QUESTION_TEMPLATES,
+    get_criteria
 )
+from app.core.llmResponse import(generateResponse)
 
 
 def generate_question(session, resume_data=None, history=None):
 
     history = history or []
 
+
     history_text = (
         "This is the first question." if not history else json.dumps(history, indent=2)
     )
 
-    criteria = QUESTION_TEMPLATES.get(session.interview_type, "")
+
+    criteria = get_criteria(session.role,session.interview_type == 'resume')
 
     if resume_data:
 
         criteria += "\n\n" + RESUME_GENERATION.format(
-            skills=resume_data.skills or [],
-            projects=resume_data.projects or [],
-            experience=resume_data.experience or [],
+            skills=resume_data.get('skills', []),
+            projects=resume_data.get('projects',  []),
+            experience=resume_data.get('experience', []),
         )
 
     prompt = BASE_QUESTION_PROMPT.format(
@@ -38,18 +42,11 @@ def generate_question(session, resume_data=None, history=None):
     )
 
     try:
-
-        response = client.generate(model=settings.LLM_MODEL, prompt=prompt)
-
-        text = response.get("response","").replace("```json", "").replace("```", "").strip()
-
-        return text
+        response = generateResponse(prompt=prompt)
+        return response
 
     except Exception as e:
         raise HTTPException(
             status_code=500,
             detail=str(e)
         )
-
-  
-   

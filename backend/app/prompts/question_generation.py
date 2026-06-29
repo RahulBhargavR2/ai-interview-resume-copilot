@@ -107,6 +107,47 @@ Avoid generic textbook questions.
 Prefer questions that verify real project ownership and hands-on experience.
 """
 
+RESUME_CRITERIA = """
+Use the candidate's resume as the primary source of context.
+
+Focus on:
+
+- Technical skills mentioned in the resume
+- Projects and their implementation details
+- Internship and work experience
+- Technologies, frameworks, and tools used
+- Architectural and design decisions
+- Trade-offs made during development
+- Challenges faced and how they were solved
+- Best practices followed
+- Performance optimizations
+- Testing and debugging approaches
+
+
+Interview Strategy:
+
+- Begin with questions directly related to the candidate's strongest skills.
+- Ask the candidate to explain projects in depth.
+- Generate follow-up questions based on previous answers.
+- Gradually increase the difficulty.
+- Explore the candidate's actual understanding instead of asking for memorized definitions.
+- Prefer practical, scenario-based questions over theoretical questions.
+- Do not ask about technologies that are not mentioned in the resume unless they are fundamental to the discussed topic.
+- Avoid repeating previous questions.
+- If the candidate performs well, increase the complexity.
+- If the candidate struggles, ask simpler follow-up questions to assess core understanding.
+
+- Cover the entire resume instead of focusing on a single project.
+- Distribute questions across projects, skills, and experience.
+- Ask at least one question from each major project before revisiting any project.
+- If multiple projects exist, rotate between them.
+- Balance questions across:
+    - Projects
+    - Technical Skills
+    - Experience
+    - Problem Solving
+- Do not spend more than two consecutive questions on the same project unless the previous answer naturally requires a follow-up.
+"""
 
 QUESTION_TEMPLATES = {
     "backend": BACKEND_GENERATION,

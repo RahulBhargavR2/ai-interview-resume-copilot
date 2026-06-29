@@ -68,7 +68,5 @@ def get_me(current_user=Depends(get_current_user)):
         "name": current_user.name,
         "email": current_user.email,
         "role": current_user.role,
-        "skills": current_user.skills,
-        "projects": current_user.projects,
-        "experience":current_user.experience
+        "resume": current_user.resumes[-1] if current_user.resumes else None
     }
